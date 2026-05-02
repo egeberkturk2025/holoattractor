@@ -1,0 +1,17 @@
+# HoloAttractor - Requirements
+# Phase-Based Holographic Content-Addressable Memory with Sequence Learning
+# Author: Ege Berk Turk, Kadir Has University
+
+# Core
+numpy>=1.24.0
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Plotting (for experiments/generate_figures.py)
+matplotlib>=3.7.0
+
+# Optional: faster LSH indexing
+scipy>=1.10.0
+
+# Development / testing
+pytest>=7.0.0
