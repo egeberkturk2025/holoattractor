@@ -2,8 +2,8 @@
 
 > Holographic Content-Addressable Memory — byte-level similarity without hashing
 
-**Author:** Ege Berk Türk  
-**Field:** Mekatronik Mühendisliği, İstanbul  
+**Author:** Ege Berk Türk
+**Affiliation:** Kadir Has University, Mechatronics Engineering, İstanbul
 **License:** MIT  
 
 ---
@@ -88,3 +88,24 @@ experiments/
 ---
 
 *Copyright (c) 2026 Ege Berk Türk — MIT License*
+
+
+---
+
+## About the Author
+
+**Ege Berk Türk** is a Mechatronics Engineering student at Kadir Has University, İstanbul. His research interests lie at the intersection of:
+
+- **Holographic & Associative Memory** — content-addressable storage without hashing
+- **Large Language Models (LLMs)** — memory architectures, retrieval-augmented generation
+- **Temporal Neural Networks** — TDNN, sequence memory, phase-based encoding
+- **Embedded AI** — running intelligent systems on resource-constrained hardware
+- **Signal Processing** — FFT-based feature extraction, phase analysis
+
+HoloAttractor is his first published research project, exploring whether byte-level holographic signatures can replace traditional hash-based deduplication in content-addressable memory systems.
+
+> *"What if a system could recognize content it has seen before — not by its hash, but by the shape of its information?"*
+
+**Contact:** egeberkturk2025@gmail.com  
+**GitHub:** [egeberkturk2025](https://github.com/egeberkturk2025)  
+**arXiv:** [egeberkturk2025](https://arxiv.org/a/egeberkturk2025)
