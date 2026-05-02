@@ -1,0 +1,223 @@
+\documentclass[10pt,twocolumn]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[colorlinks=true,linkcolor=blue,citecolorblue,urlcolor=blue]{hyperref}
+\usepackage{listings}
+\usepackage{booktabs}
+\usepackage{amsmath}
+\lstset{basicstyle=\small\ttfamily, breaklines=true, frame=single, backgroundcolor=\color{gray!8}}
+\usepackage{xcolor}
+
+\title{\textbf{HoloAttractor}: Phase-Based Holographic\\
+Content-Addressable Memory with Sequence Learning}
+
+\author{
+  Ege Berk T{\"u}rk \\
+  \small Kadir Has University, Department of Mechatronics Engineering \\
+  \small Istanbul, Turkey \\
+  \small \href{https://github.com/egeberkturk2025/holoattractor}{github.com/egeberkturk2025/holoattractor} \\
+  \small egeberkturk2025@gmail.com
+}
+
+\date{May 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We present HoloAttractor, a content-addressable memory system that encodes
+digital content as FFT phase vectors and learns temporal sequence patterns
+using a Temporal Delay Neural Network (TDNN). Unlike hash-based retrieval
+systems, HoloAttractor identifies similar content through learned phase
+embeddings without requiring exact byte-level matching or format-specific
+decoders. Experiments demonstrate that (1)~phase-based encoding achieves
+0.91 cosine similarity across resolution variants where perceptual hashing
+achieves 0.73, (2)~a TDNN trained with triplet loss achieves a temporal
+coherence gap of 0.78 between adjacent and distant sequence pairs, and
+(3)~a previously uncharacterized \emph{format bias} is identified and
+quantified: compressed file formats impose a similarity floor $\approx$0.77
+for JPEG that masks semantic content variation, motivating format-invariant
+phase encoding as future work.
+\end{abstract}
+
+\section{Introduction}
+Traditional content retrieval relies on cryptographic hashes (SHA-256, MD5)
+that produce entirely different outputs for even single-bit changes.
+Perceptual hashing approaches (pHash, dHash) improve robustness but operate
+on decoded pixel data, requiring format-specific preprocessing pipelines.
+
+We ask a different question: \textit{``Can a system answer `I have seen this
+content before' using only the phase structure of raw byte sequences, without
+decoding or hashing?''} This framing is inspired by holographic associative
+memory theory~\cite{hopfield1982}, where information is distributed across a
+high-dimensional complex space and retrieval is performed via similarity
+rather than exact address lookup.
+
+\noindent\textbf{Contributions:}
+\begin{itemize}\setlength{\itemsep}{0pt}
+  \item A byte-level phase projection pipeline with bit-perfect reconstruction and $3.3\times$ sparsity
+  \item Cosine LSH semantic indexing outperforming perceptual hash baselines (Table~\ref{tab:baseline})
+  \item A compact TDNN (411K params) that learns temporal coherence in byte-level phase sequences (Table~\ref{tab:tdnn})
+  \item First quantitative characterization of format-induced phase similarity bias (Section~\ref{sec:bias})
+\end{itemize}
+
+\section{Related Work}
+\textbf{Perceptual hashing.} pHash~\cite{zauner2010} and dHash operate on decoded image content and are format-specific.
+
+\textbf{Locality-Sensitive Hashing.} LSH~\cite{indyk1998} enables approximate nearest-neighbor search. Our work applies cosine LSH to phase vectors.
+
+\textbf{Temporal Delay Neural Networks.} TDNNs~\cite{waibel1989} capture temporal patterns through dilated convolutions. We adapt this to byte-level phase sequences.
+
+\textbf{Content-addressable memory.} Hopfield networks~\cite{hopfield1982} and modern dense associative memories~\cite{ramsauer2020} store patterns and retrieve by partial match.
+
+\section{System Architecture}
+
+\subsection{Phase Projection}
+Given a file $F$, we partition it into fixed-size chunks $c_i$ of 4096 bytes.
+For each chunk we compute the FFT and extract the phase spectrum:
+$$\phi_i = \angle\,\text{FFT}(c_i)[:N/8]$$
+yielding a 512-dimensional unit vector per chunk. Reconstruction is bit-perfect
+(magnitude + phase $\rightarrow$ original bytes). Delta encoding of adjacent
+vectors achieves $3.3\times$ compression.
+
+\subsection{Cosine LSH Index}
+Phase vectors are indexed with 128 random hyperplanes. File-level similarity
+is the mean cosine similarity across chunk pairs at matching offsets.
+
+\subsection{TDNN Sequence Memory}
+\begin{lstlisting}[caption={TDNN architecture},label={lst:tdnn}]
+Input  (B, 4, 512)   # 4 timesteps x phase
+TDNN-1 512->256, ctx=2, dil=1
+TDNN-2 256->128, ctx=3, dil=2
+TDNN-3 128->128, ctx=2, dil=1
+Pool   AdaptiveAvgPool1d(1)
+Linear 128->128
+Output (B, 128)      # L2-normalized
+\end{lstlisting}
+Total: 411,264 parameters. The dilation=2 in TDNN-2 yields a receptive field
+of 7 timesteps.
+
+\subsection{Triplet Training}
+We train with triplet margin loss ($m=0.3$):
+$$L = \max(0,\; d_{a,p} - d_{a,n} + 0.3)$$
+where $d = 1 - \text{cosinesim}$. Positives: $\text{sequence}_i$ and
+$\text{sequence}_{i+1}$ (adjacent). Negatives: $\text{sequence}_i$ and
+$\text{sequence}_j$, $|i-j|>10$. Training set: 23,021 sequences from a
+single 83\,MB JPEG. Optimizer: Adam, $\text{lr}=10^{-3}$, 20 epochs, batch 64.
+
+\section{Experiments}
+
+\subsection{Baseline Comparison}
+\begin{table}[h]
+\caption{Cross-resolution similarity (83\,MB vs.\ 1.9\,MB JPEG).}
+\label{tab:baseline}
+\begin{tabular}{lcc}
+\toprule
+Method & Similarity & Decoder needed \\
+\midrule
+pHash & 0.73 & Yes (JPEG) \\
+dHash & 0.71 & Yes (JPEG) \\
+SSIM  & 0.68 & Yes (JPEG) \\
+Phase-LSH (ours) & \textbf{0.91} & \textbf{No} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{TDNN Temporal Coherence}
+\begin{table}[h]
+\caption{TDNN validation metrics after 20 epochs.}
+\label{tab:tdnn}
+\begin{tabular}{lcc}
+\toprule
+Metric & Value & Threshold \\
+\midrule
+$\text{pos}_{\text{mean}}$ (adjacent) & 0.8066 & --- \\
+$\text{neg}_{\text{mean}}$ (distant)  & 0.0272 & --- \\
+Gap & \textbf{0.7794} & $>$0.50 \\
+Final loss & 0.0020 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Gap $0.78 \gg 0.50$ threshold. The TDNN successfully distinguishes adjacent
+from distant phase sequences, demonstrating that byte-level temporal coherence
+is learnable.
+
+\subsection{Cross-Content Test (Phase~8)}\label{sec:bias}
+\begin{table}[h]
+\caption{Cross-content similarity, trained TDNN.}
+\label{tab:crosscontent}
+\begin{tabular}{lcc}
+\toprule
+Pair & Similarity & Expected \\
+\midrule
+Mona Lisa 83\,MB $\leftrightarrow$ 1.9\,MB & 0.7695 & High \\
+Mona Lisa $\leftrightarrow$ Cat (JPEG) & 0.7817 & Low \\
+Gap & $-0.01$ & $>$0.30 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The model fails to distinguish visually dissimilar JPEG images. All JPEG files
+achieve similarity $0.77$--$0.78$ regardless of visual content.
+
+\section{The Format Bias Problem}\label{sec:format}
+JPEG encoding introduces consistent phase signatures through fixed file
+headers, shared Huffman tables, and $8\times8$ DCT block structure. These
+format-level patterns create a similarity floor $\approx0.77$ across all JPEG
+files, masking content-level variation. An untrained (randomly initialized)
+model similarly yields $0.77$ for all JPEG pairs, confirming the floor is a
+property of JPEG phase structure, not a learned artifact.
+
+\noindent\textbf{Proposed solutions:}
+\begin{enumerate}\setlength{\itemsep}{0pt}
+  \item Format-diverse negatives --- train with JPEG + PNG + PDF + TXT simultaneously
+  \item Multi-scale phase --- chunk sizes 512\,B, 4\,KB, 64\,KB
+  \item Differential phase --- subtract the expected format phase distribution
+  \item Decoded-domain phase --- apply FFT to decoded pixel data
+\end{enumerate}
+
+\section{SphereStore Storage Layer}
+HoloAttractor includes a REST CRUD storage layer (SphereStore) backed by
+cosine LSH indices. Phase vectors are stored as sparse delta-encoded arrays
+($3.3\times$ compression). The system ships as a Docker image with a Godot~4
+real-time visualization client (Phases 1--4, 82 integration tests passing).
+
+\section{Discussion}
+\textbf{What works.} Phase-LSH achieves 0.91 cross-resolution similarity
+without any image decoder. TDNN temporal coherence gap 0.78 demonstrates
+that byte-level sequential patterns are learnable with a compact model.
+
+\textbf{What does not yet.} Cross-format content discrimination fails due to
+the format bias problem (Section~\ref{sec:format}). This is a concrete,
+quantified limitation rather than a vague future-work placeholder.
+
+\textbf{Why it matters.} Every existing file system identifies content by
+cryptographic hash. HoloAttractor points toward storage systems that identify
+content by \emph{learned similarity} --- finding that ``these two files
+contain essentially the same information'' without exact byte matches. The
+critical path runs through solving the format bias problem.
+
+\section{Conclusion}
+We presented HoloAttractor, a phase-based content-addressable memory system
+with three concrete results: (1)~Phase-LSH similarity 0.91, outperforming
+perceptual hashing without a format decoder; (2)~TDNN temporal coherence
+gap 0.78, demonstrating learnable byte-level temporal patterns;
+(3)~Format bias quantified for the first time: JPEG phase similarity
+floor $\approx$0.77 masks semantic content.
+
+The format bias finding reframes Phase~8's failure as the paper's most
+actionable contribution: a precise problem statement with four proposed
+solutions and a reproducible experimental setup.
+
+\noindent\textbf{Code.}
+\url{https://github.com/egeberkturk2025/holoattractor}
+
+\begin{thebibliography}{9}
+\bibitem{hopfield1982} J.J.~Hopfield. Neural networks and physical systems with emergent collective computational abilities. \textit{PNAS}, 79(8):2554--2558, 1982.
+\bibitem{indyk1998} P.~Indyk and R.~Motwani. Approximate nearest neighbors: towards removing the curse of dimensionality. \textit{STOC}, pages 604--613, 1998.
+\bibitem{ramsauer2020} H.~Ramsauer et al. Hopfield networks is all you need. \textit{ICLR}, 2021.
+\bibitem{waibel1989} A.~Waibel et al. Phoneme recognition using time-delay neural networks. \textit{IEEE Trans. Acoustics, Speech, Signal Processing}, 37(3):328--339, 1989.
+\bibitem{zauner2010} C.~Zauner. Implementation and benchmarking of perceptual image hash functions. Master's thesis, FH~Hagenberg, 2010.
+\end{thebibliography}
+
+\end{document}
