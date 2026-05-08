@@ -1,0 +1,164 @@
+{
+  "config": {
+    "n_points": 50000,
+    "hit_radius": 0.03,
+    "random_seed": 42,
+    "dataset_types": ["uniform", "clustered", "surface"],
+    "ray_configs": {
+      "random": 1000,
+      "grid_scan": 1024
+    }
+  },
+  "results": {
+    "uniform": {
+      "random": {
+        "octree": {
+          "visited_nodes_mean": 71.8,
+          "visited_nodes_p95": 142.0,
+          "tested_points_mean": 28.54,
+          "tested_points_p95": 64.0,
+          "query_time_s": 0.338,
+          "query_time_mean_ms": 0.338,
+          "n_queries": 1000,
+          "build_time_s": 4.21
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 199.1,
+          "visited_nodes_p95": 387.0,
+          "tested_points_mean": 31.07,
+          "tested_points_p95": 64.0,
+          "query_time_s": 0.362,
+          "query_time_mean_ms": 0.362,
+          "n_queries": 1000,
+          "build_time_s": 3.87
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.773,
+        "pass": false
+      },
+      "grid_scan": {
+        "octree": {
+          "visited_nodes_mean": 121.0,
+          "visited_nodes_p95": 198.0,
+          "tested_points_mean": 43.20,
+          "tested_points_p95": 128.0,
+          "query_time_s": 0.531,
+          "query_time_mean_ms": 0.519,
+          "n_queries": 1024,
+          "build_time_s": 4.21
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 321.0,
+          "visited_nodes_p95": 577.0,
+          "tested_points_mean": 45.88,
+          "tested_points_p95": 128.0,
+          "query_time_s": 0.714,
+          "query_time_mean_ms": 0.697,
+          "n_queries": 1024,
+          "build_time_s": 3.87
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.653,
+        "pass": false
+      }
+    },
+    "clustered": {
+      "random": {
+        "octree": {
+          "visited_nodes_mean": 58.3,
+          "visited_nodes_p95": 112.0,
+          "tested_points_mean": 34.19,
+          "tested_points_p95": 89.0,
+          "query_time_s": 0.291,
+          "query_time_mean_ms": 0.291,
+          "n_queries": 1000,
+          "build_time_s": 3.94
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 161.4,
+          "visited_nodes_p95": 310.0,
+          "tested_points_mean": 20.62,
+          "tested_points_p95": 51.0,
+          "query_time_s": 0.318,
+          "query_time_mean_ms": 0.318,
+          "n_queries": 1000,
+          "build_time_s": 3.52
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.769,
+        "pass": false
+      },
+      "grid_scan": {
+        "octree": {
+          "visited_nodes_mean": 99.7,
+          "visited_nodes_p95": 178.0,
+          "tested_points_mean": 51.43,
+          "tested_points_p95": 134.0,
+          "query_time_s": 0.489,
+          "query_time_mean_ms": 0.478,
+          "n_queries": 1024,
+          "build_time_s": 3.94
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 267.2,
+          "visited_nodes_p95": 498.0,
+          "tested_points_mean": 29.81,
+          "tested_points_p95": 76.0,
+          "query_time_s": 0.601,
+          "query_time_mean_ms": 0.587,
+          "n_queries": 1024,
+          "build_time_s": 3.52
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.680,
+        "pass": false
+      }
+    },
+    "surface": {
+      "random": {
+        "octree": {
+          "visited_nodes_mean": 83.6,
+          "visited_nodes_p95": 157.0,
+          "tested_points_mean": 47.31,
+          "tested_points_p95": 112.0,
+          "query_time_s": 0.203,
+          "query_time_mean_ms": 0.203,
+          "n_queries": 1000,
+          "build_time_s": 4.08
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 221.9,
+          "visited_nodes_p95": 418.0,
+          "tested_points_mean": 24.34,
+          "tested_points_p95": 59.0,
+          "query_time_s": 0.170,
+          "query_time_mean_ms": 0.170,
+          "n_queries": 1000,
+          "build_time_s": 3.71
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.654,
+        "pass": false
+      },
+      "grid_scan": {
+        "octree": {
+          "visited_nodes_mean": 138.4,
+          "visited_nodes_p95": 241.0,
+          "tested_points_mean": 71.82,
+          "tested_points_p95": 178.0,
+          "query_time_s": 0.672,
+          "query_time_mean_ms": 0.656,
+          "n_queries": 1024,
+          "build_time_s": 4.08
+        },
+        "muqarnas": {
+          "visited_nodes_mean": 358.1,
+          "visited_nodes_p95": 641.0,
+          "tested_points_mean": 37.16,
+          "tested_points_p95": 91.0,
+          "query_time_s": 0.581,
+          "query_time_mean_ms": 0.567,
+          "n_queries": 1024,
+          "build_time_s": 3.71
+        },
+        "visited_nodes_ratio_muq_over_oct": 2.588,
+        "pass": false
+      }
+    }
+  }
+}
